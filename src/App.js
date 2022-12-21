@@ -3,36 +3,43 @@ import "./App.css"
 import React, { useState, useEffect } from "react"
 import droneService from "./services/drones"
 
-const calculateDistance = (x1,y1,x2,y2) => {
-
-
-    const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
-    console.log("Distance: " + dist)
-    return dist
+const calculateDistance = (x1, y1, x2, y2) => {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 }
 
-const calculateDistanceToAllDrones = drones => {
+const calculateViolatedDrones = drones => {
     const violatedDrones = []
     for (let i = 0; i < drones.length; i++) {
-      const drone = drones[i]
-      if(calculateDistance(parseInt(drone.positionX), parseInt(drone.positionY), 250000, 250000) < 100000) {
-        violatedDrones.push(drone)
-      }
+        const drone = drones[i]
+        if (
+            calculateDistance(
+                parseInt(drone.positionX),
+                parseInt(drone.positionY),
+                250000,
+                250000
+            ) < 100000
+        ) {
+            const violatedDrone = { ...drone, violatedTime: new Date() }
+            violatedDrones.push(violatedDrone)
+        }
     }
     return violatedDrones
 }
 
+const timeDifferenceInMinutes = (date1, date2) => {
+    const difference = date2.getTime() - date1.getTime()
+    return Math.round(difference / 1000 / 60)
+}
 
 function App() {
     const [drones, setDrones] = useState([])
+    const [violatedDrones, setViolatedDrones] = useState([])
 
     // fetch drones every 2 seconds
     useEffect(() => {
         const interval = setInterval(() => {
             const fetchDrones = async () => {
                 const resp = await droneService.getAllDrones()
-                console.log("Drones:")
-                console.log(resp)
                 setDrones(resp)
             }
             fetchDrones()
@@ -40,11 +47,29 @@ function App() {
         return () => clearInterval(interval)
     }, [drones])
 
+    // get violated drones
     useEffect(() => {
-        const violatedDrones = calculateDistanceToAllDrones(drones)
-        console.log("Violated drones:")
-        console.log(violatedDrones)
-    }, [drones])
+        for (let violatedDrone of calculateViolatedDrones(drones)) {
+            if (
+                violatedDrones.filter(
+                    d => d.serialNumber === violatedDrone.serialNumber
+                ).length === 0
+            ) {
+                setViolatedDrones(violatedDrones.concat(violatedDrone))
+                console.log(violatedDrones)
+            }
+        }
+    }, [drones, violatedDrones])
+
+    // remove expired drones
+    useEffect(() => {
+        for (let violatedDrone of violatedDrones) {
+            if(timeDifferenceInMinutes(violatedDrone.violatedTime, new Date()) > 1){
+                setViolatedDrones(violatedDrones.filter(d => d.serialNumber !== violatedDrone.serialNumber))
+                console.log(violatedDrones)
+            }
+        }
+    }, [violatedDrones])
 
     return (
         <div className="App">
