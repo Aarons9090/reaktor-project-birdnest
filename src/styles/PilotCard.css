@@ -1,0 +1,14 @@
+h2, h3, p {
+    color: var(--wp-preset--color--secondary)
+}
+
+
+.pilot-card {
+    min-width: 400px;
+    min-height: 200px;
+    flex: 1 0 33%;
+    background-color: white;
+    margin: 20px 30px;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    border-radius: 17px;
+}
