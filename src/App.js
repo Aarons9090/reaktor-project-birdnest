@@ -2,6 +2,7 @@ import logo from "./logo.svg"
 import "./App.css"
 import React, { useState, useEffect } from "react"
 import droneService from "./services/drones"
+import pilotService from "./services/pilots"
 
 const calculateDistance = (x1, y1, x2, y2) => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
@@ -19,8 +20,7 @@ const calculateViolatedDrones = drones => {
                 250000
             ) < 100000
         ) {
-            const violatedDrone = { ...drone, violatedTime: new Date() }
-            violatedDrones.push(violatedDrone)
+            violatedDrones.push(drone)
         }
     }
     return violatedDrones
@@ -34,6 +34,7 @@ const timeDifferenceInMinutes = (date1, date2) => {
 function App() {
     const [drones, setDrones] = useState([])
     const [violatedDrones, setViolatedDrones] = useState([])
+    const [pilots, setPilots] = useState([])
 
     // fetch drones every 2 seconds
     useEffect(() => {
@@ -49,27 +50,46 @@ function App() {
 
     // get violated drones
     useEffect(() => {
+      const getViolatedDrones = async () => {
         for (let violatedDrone of calculateViolatedDrones(drones)) {
-            if (
-                violatedDrones.filter(
-                    d => d.serialNumber === violatedDrone.serialNumber
-                ).length === 0
-            ) {
-                setViolatedDrones(violatedDrones.concat(violatedDrone))
-                console.log(violatedDrones)
-            }
-        }
-    }, [drones, violatedDrones])
 
-    // remove expired drones
-    useEffect(() => {
-        for (let violatedDrone of violatedDrones) {
-            if(timeDifferenceInMinutes(violatedDrone.violatedTime, new Date()) > 1){
-                setViolatedDrones(violatedDrones.filter(d => d.serialNumber !== violatedDrone.serialNumber))
-                console.log(violatedDrones)
-            }
+          // check if drone is already in violatedDrones
+          if (
+              violatedDrones.filter(
+                  d => d.serialNumber === violatedDrone.serialNumber
+              ).length === 0
+          ) {
+              setViolatedDrones(violatedDrones.concat(violatedDrone))
+
+              // get pilot of violated drone
+              const newPilot = await pilotService.getPilot(violatedDrone.serialNumber)
+                if (pilots.filter(p => p.pilotId === newPilot.pilotId).length === 0){
+                    const pilot = {...newPilot, violatedTime: new Date()}
+                    setPilots(pilots.concat(pilot))
+                    console.log("add new pilot")
+                    console.log(pilots)
+                  }
+          }
         }
-    }, [violatedDrones])
+      }
+      getViolatedDrones()
+
+        
+    }, [drones, violatedDrones, pilots])
+
+     // remove expired pilots
+     useEffect(() => {
+      for (let pilot of pilots) {
+          if (
+              timeDifferenceInMinutes(pilot.violatedTime, new Date()) > 1
+          ) {
+              setPilots(pilots.filter(p => p.pilotId !== pilot.pilotId))
+              console.log("remove expired pilot")
+              console.log(pilots)
+          }
+      }
+  }, [pilots])
+
 
     return (
         <div className="App">
