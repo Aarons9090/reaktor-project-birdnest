@@ -16,7 +16,7 @@ const PilotCard = ({ pilot }) => {
             </div>
             <div className="pilot-card__time">
                 <h3>Violation time:</h3>
-                <p>22.3.2022 14:22</p>
+                <p>{pilot.violatedTime.toLocaleString()}</p>
             </div>
         </div>
     )
