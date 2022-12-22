@@ -149,7 +149,7 @@ function App() {
 
 
     return (
-        <div className="App">
+        <div className='App'>
             <Header />
             {pilots ? <PilotCardGrid pilots={pilots} /> : null}
         </div>

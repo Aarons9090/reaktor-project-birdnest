@@ -7,7 +7,7 @@ const PilotCardGrid = ({ pilots }) => {
             {pilots ? pilots.map(pilot => (
                 <PilotCard key={pilot.pilotId} pilot={pilot} />
             ))
-            : null}
+                : null}
         </div>
     )
 }
