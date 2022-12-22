@@ -4,7 +4,9 @@ import droneService from "./services/drones"
 import pilotService from "./services/pilots"
 import PilotCardGrid from "./components/PilotCardGrid"
 
-const PILOT_EXPIRATION_TIME = 10
+const PILOT_EXPIRATION_TIME = 1
+const NDZ_RADIUS = 100000
+const NDZ_CENTER = { x: 250000, y: 250000 }
 
 const calculateDistance = (x1, y1, x2, y2) => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
@@ -14,15 +16,24 @@ const calculateViolatedDrones = drones => {
     const violatedDrones = []
     for (let i = 0; i < drones.length; i++) {
         const drone = drones[i]
+        const distance = calculateDistance(
+            parseInt(drone.positionX),
+            parseInt(drone.positionY),
+            NDZ_CENTER.x,
+            NDZ_CENTER.y
+        ) 
         if (
-            calculateDistance(
-                parseInt(drone.positionX),
-                parseInt(drone.positionY),
-                250000,
-                250000
-            ) < 100000
+            distance < NDZ_RADIUS
         ) {
-            violatedDrones.push(drone)
+            if(!drone.distance){
+                violatedDrones.push({...drone, "distance": distance})
+            }else{
+                if(distance < drone.distance){
+                    drone.distance = distance
+                }
+                violatedDrones.push(drone)
+            }
+            
         }
     }
     return violatedDrones
@@ -31,11 +42,13 @@ const calculateViolatedDrones = drones => {
 const removeExpiredPilots = pilots => {
     for (let pilot of pilots) {
         const timeDif = timeDifferenceInMinutes(pilot.violatedTime, new Date())
-
-        return (timeDif > PILOT_EXPIRATION_TIME) ? 
-            pilots.filter(p => p.pilotId !== pilot.pilotId) 
-            : pilots
+        if (
+           (timeDif > PILOT_EXPIRATION_TIME)
+        ) {
+            pilots = pilots.filter(p => p.pilotId !== pilot.pilotId)
+        }
     }
+    return pilots
 }
 
 const timeDifferenceInMinutes = (date1, date2) => {
@@ -43,16 +56,11 @@ const timeDifferenceInMinutes = (date1, date2) => {
     return difference / 1000 / 60
 }
 
-const getUniquePilots = (pilots, pilot) => {
-    if (pilots.filter(p => p.pilotId === pilot.pilotId).length === 0){
-        return pilots.concat(pilot)
-    }    
-}
 
-const isDroneInList = (violatedDrones, drone) => {
-    return violatedDrones.filter(
-        d => d.serialNumber === drone.serialNumber
-    ).length === 0
+const isNewDrone = (pilots, drone) => {
+    return pilots ? pilots.filter(
+        p => p.drone.serialNumber === drone.serialNumber
+    ).length === 0 : true
 }
 
 function App() {
@@ -79,27 +87,34 @@ function App() {
     // get violated drones
     useEffect(() => {
       const getViolatedDrones = async () => {
-        for (let violatedDrone of calculateViolatedDrones(drones)) {
+        const violatedDronesArray = calculateViolatedDrones(drones)
+        for (const violatedDrone of violatedDronesArray) {
 
-            // check if drone is already in violatedDrones
+            // check if drone is new
             if (
-                isDroneInList(violatedDrones, violatedDrone)
+                isNewDrone(pilots, violatedDrone)
             ) {
-                setViolatedDrones(violatedDrones.concat(violatedDrone))
-
+                    
                 // get pilot of violated drone
                 const resp = await pilotService.getPilot(violatedDrone.serialNumber)
-                const pilot = {...resp, violatedTime: new Date()}
+                const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
+                console.log(pilot)
                 
-                // add unique pilot only
-                setPilots(pilots ? getUniquePilots(pilots, pilot) : [pilot])
+                setPilots(pilots ? pilots.concat(pilot) : [pilot])
+            }else{
+                // update pilot
+                 const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
+                 const updatedPilot = {...pilot, violatedTime: new Date(), "drone": violatedDrone}
+                 console.log(updatedPilot)
+                 const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
+                setPilots(p=> updatedPilots)
             }
         }
     }
       getViolatedDrones()
 
         
-    }, [drones, violatedDrones, pilots])
+    }, [drones, violatedDrones])
 
 
     return (

@@ -12,7 +12,7 @@ const PilotCard = ({ pilot }) => {
             </div>
             <div className="pilot-card__distance">
                 <h3>Closest distance:</h3>
-                <p>110 m</p>
+                <p>{Math.round(pilot.drone.distance / 1000)} m</p>
             </div>
             <div className="pilot-card__time">
                 <h3>Violation time:</h3>
