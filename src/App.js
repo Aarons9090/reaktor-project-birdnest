@@ -117,6 +117,7 @@ function App() {
     useEffect(() => {
         const getViolatedDrones = async () => {
             const violatedDronesArray = calculateViolatedDrones(drones)
+            let updatedPilots = pilots
             for (const violatedDrone of violatedDronesArray) {
 
                 if (isNewDrone(pilots, violatedDrone)) {
@@ -125,7 +126,7 @@ function App() {
                     const resp = await pilotService.getPilot(violatedDrone.serialNumber)
                     const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
                     if(pilot){
-                        setPilots(pilots ? pilots.concat(pilot) : [pilot])
+                        updatedPilots = pilots ? pilots.concat(pilot) : [pilot]
                     }
                 
                 }else{
@@ -137,11 +138,12 @@ function App() {
                     if(pilot.drone.distance > violatedDrone.distance){
                         updatedPilot.drone.distance = violatedDrone.distance
                     }
-
-                    const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
-                    setPilots(updatedPilots)
+                    // find the index of the pilot in the array and update it
+                    const index = updatedPilots.findIndex(p => p.drone.serialNumber === violatedDrone.serialNumber)
+                    updatedPilots[index] = updatedPilot
                 }
             }
+            setPilots(updatedPilots)
         }
         getViolatedDrones()
 
