@@ -1,5 +1,5 @@
 import "./styles/App.css"
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import droneService from "./services/drones"
 import pilotService from "./services/pilots"
 import PilotCardGrid from "./components/PilotCardGrid"
@@ -38,7 +38,7 @@ const calculateViolatedDrones = drones => {
 
         // ignore drones outside NDZ
         if (distance >= NDZ_RADIUS) {
-                return null
+            return null
         }
 
         // set / update drone's distance
@@ -115,37 +115,36 @@ function App() {
 
     // get violated drones
     useEffect(() => {
-      const getViolatedDrones = async () => {
-        const violatedDronesArray = calculateViolatedDrones(drones)
-        for (const violatedDrone of violatedDronesArray) {
+        const getViolatedDrones = async () => {
+            const violatedDronesArray = calculateViolatedDrones(drones)
+            for (const violatedDrone of violatedDronesArray) {
 
-            if (isNewDrone(pilots, violatedDrone)) {
+                if (isNewDrone(pilots, violatedDrone)) {
 
-                // get pilot of violated drone
-                const resp = await pilotService.getPilot(violatedDrone.serialNumber)
-                const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
-                if(pilot){
-                    setPilots(pilots ? pilots.concat(pilot) : [pilot])
-                }
+                    // get pilot of violated drone
+                    const resp = await pilotService.getPilot(violatedDrone.serialNumber)
+                    const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
+                    if(pilot){
+                        setPilots(pilots ? pilots.concat(pilot) : [pilot])
+                    }
                 
-            }else{
-                // update pilot's violation time and drones distance
-                const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
-                const updatedPilot = {...pilot, violatedTime: new Date()}
+                }else{
+                    // update pilot's violation time and drones distance
+                    const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
+                    const updatedPilot = {...pilot, violatedTime: new Date()}
 
-                // take smallest distance
-                if(pilot.drone.distance > violatedDrone.distance){
-                    updatedPilot.drone.distance = violatedDrone.distance
+                    // take smallest distance
+                    if(pilot.drone.distance > violatedDrone.distance){
+                        updatedPilot.drone.distance = violatedDrone.distance
+                    }
+
+                    const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
+                    setPilots(updatedPilots)
                 }
-
-                const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
-                setPilots(p=> updatedPilots)
             }
         }
-    }
-      getViolatedDrones()
+        getViolatedDrones()
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [drones])
 
 
