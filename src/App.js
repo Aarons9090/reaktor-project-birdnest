@@ -9,50 +9,73 @@ const PILOT_EXPIRATION_TIME = 10
 const NDZ_RADIUS = 100000
 const NDZ_CENTER = { x: 250000, y: 250000 }
 
+/**
+ * Calculates the distance between two points
+ * @param {number} x1 
+ * @param {number} y1 
+ * @param {number} x2 
+ * @param {number} y2 
+ * @returns distance between two points
+ */
+
 const calculateDistance = (x1, y1, x2, y2) => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
 }
 
+/**
+ * Calculates the violated drones from array of drones
+ * @param {obj} drones 
+ * @returns array of violated drones
+ */
 const calculateViolatedDrones = drones => {
-    const violatedDrones = []
-    for (let i = 0; i < drones.length; i++) {
-        const drone = drones[i]
+    const violatedDrones = drones.map((drone) => {
         const distance = calculateDistance(
             parseInt(drone.positionX),
             parseInt(drone.positionY),
             NDZ_CENTER.x,
             NDZ_CENTER.y
         ) 
-        if (
-            distance < NDZ_RADIUS
-        ) {
-            // set / update drone's distance
-            if(!drone.distance){
-                violatedDrones.push({...drone, "distance": distance})
-            }else{
-                if(distance < drone.distance){
-                    drone.distance = distance
-                }
-                violatedDrones.push(drone)
-            }
-            
+
+        // ignore drones outside NDZ
+        if (distance >= NDZ_RADIUS) {
+                return null
         }
-    }
-    return violatedDrones
+
+        // set / update drone's distance
+        if(!drone.distance){
+            return {...drone, distance}
+        }else{
+            if(distance < drone.distance){
+                drone.distance = distance
+            }
+            return drone
+        }
+    })
+
+    return violatedDrones.filter(d => d)
 }
 
+/**
+ * Remove pilots with expired violation time
+ * @param {obj} pilots 
+ * @returns array of remaining pilots
+ */
 const removeExpiredPilots = pilots => {
-    for (let pilot of pilots) {
+    for (const pilot of pilots) {
         const timeDif = timeDifferenceInMinutes(pilot.violatedTime, new Date())
-        if (
-           (timeDif > PILOT_EXPIRATION_TIME)
-        ) {
+        if (timeDif > PILOT_EXPIRATION_TIME) {
             pilots = pilots.filter(p => p.pilotId !== pilot.pilotId)
         }
     }
     return pilots
 }
 
+/**
+ * Calculate time difference in between two dates in minutes
+ * @param {Date} date1 
+ * @param {Date} date2 
+ * @returns time difference in minutes
+ */
 const timeDifferenceInMinutes = (date1, date2) => {
     const difference = date2.getTime() - date1.getTime()
     return difference / 1000 / 60
