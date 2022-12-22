@@ -106,7 +106,13 @@ function App() {
             }else{
                 // update pilot's violation time and drones distance
                 const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
-                const updatedPilot = {...pilot, violatedTime: new Date(), "drone": violatedDrone}
+                const updatedPilot = {...pilot, violatedTime: new Date()}
+
+                // take smallest distance
+                if(pilot.drone.distance > violatedDrone.distance){
+                    updatedPilot.drone.distance = violatedDrone.distance
+                }
+
                 const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
                 setPilots(p=> updatedPilots)
             }
@@ -114,7 +120,7 @@ function App() {
     }
       getViolatedDrones()
 
-        
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [drones])
 
 
