@@ -1,14 +1,32 @@
 h2, h3, p {
-    color: var(--wp-preset--color--secondary)
+    color: var(--wp-preset--color--secondary);
+    line-height: 0.5em;
+    text-align: left;
+    padding: 0 20px 0 20px
 }
 
+h2 {
+    font-size: 1.2em;
+}
+
+h3 {
+    font-size: 1em;
+}
+
+p {
+    font-size: 0.8em;
+}
 
 .pilot-card {
-    min-width: 400px;
-    min-height: 200px;
-    flex: 1 0 33%;
     background-color: white;
+    min-width: 450px;
     margin: 20px 30px;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     border-radius: 17px;
+}
+
+@media (max-width: 500px) {
+    .pilot-card {
+        min-width: 300px;
+    }
 }

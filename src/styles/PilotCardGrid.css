@@ -1,0 +1,8 @@
+.pilotcard-grid {
+    margin: 0 auto;
+    max-width: 1900px;
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    
+}

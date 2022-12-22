@@ -2,7 +2,7 @@ import "./App.css"
 import React, { useState, useEffect } from "react"
 import droneService from "./services/drones"
 import pilotService from "./services/pilots"
-import PilotCard from "./components/PilotCard"
+import PilotCardGrid from "./components/PilotCardGrid"
 
 const calculateDistance = (x1, y1, x2, y2) => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
@@ -93,9 +93,7 @@ function App() {
 
     return (
         <div className="App">
-            <header className="App-header">
-                {pilots ? pilots.map(pilot => <PilotCard key={pilot.pilotId} pilot={pilot} />) : null}
-            </header>
+            {pilots ? <PilotCardGrid pilots={pilots} /> : null}
         </div>
     )
 }
