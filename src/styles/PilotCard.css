@@ -1,19 +1,19 @@
-h2, h3, p {
+.pilot-card h2, .pilot-card h3, .pilot-card p {
     color: var(--wp-preset--color--secondary);
     line-height: 0.5em;
     text-align: left;
     padding: 0 20px 0 20px
 }
 
-h2 {
+.pilot-card h2 {
     font-size: 1.2em;
 }
 
-h3 {
+.pilot-card h3 {
     font-size: 1em;
 }
 
-p {
+.pilot-card p {
     font-size: 0.8em;
 }
 

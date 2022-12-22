@@ -6,7 +6,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --wp-preset--color--primary: rgb(40, 24, 200);
-  --wp-preset--color--secondary: rgb(37, 13, 85);
+  --wp-preset--color--secondary: rgb(18,9,80);
   background-color: var(--wp-preset--color--primary);
 }
 

@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react"
 import droneService from "./services/drones"
 import pilotService from "./services/pilots"
 import PilotCardGrid from "./components/PilotCardGrid"
+import Header from "./components/Header"
 
-const PILOT_EXPIRATION_TIME = 1
+const PILOT_EXPIRATION_TIME = 10
 const NDZ_RADIUS = 100000
 const NDZ_CENTER = { x: 250000, y: 250000 }
 
@@ -25,6 +26,7 @@ const calculateViolatedDrones = drones => {
         if (
             distance < NDZ_RADIUS
         ) {
+            // set / update drone's distance
             if(!drone.distance){
                 violatedDrones.push({...drone, "distance": distance})
             }else{
@@ -65,7 +67,6 @@ const isNewDrone = (pilots, drone) => {
 
 function App() {
     const [drones, setDrones] = useState([])
-    const [violatedDrones, setViolatedDrones] = useState([])
     const [pilots, setPilots] = useState([])
 
     // fetch drones every 2 seconds
@@ -98,15 +99,15 @@ function App() {
                 // get pilot of violated drone
                 const resp = await pilotService.getPilot(violatedDrone.serialNumber)
                 const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
-                console.log(pilot)
+                if(pilot){
+                    setPilots(pilots ? pilots.concat(pilot) : [pilot])
+                }
                 
-                setPilots(pilots ? pilots.concat(pilot) : [pilot])
             }else{
-                // update pilot
-                 const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
-                 const updatedPilot = {...pilot, violatedTime: new Date(), "drone": violatedDrone}
-                 console.log(updatedPilot)
-                 const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
+                // update pilot's violation time and drones distance
+                const pilot = pilots.find(p => p.drone.serialNumber === violatedDrone.serialNumber)
+                const updatedPilot = {...pilot, violatedTime: new Date(), "drone": violatedDrone}
+                const updatedPilots = pilots.map(p => p.pilotId === updatedPilot.pilotId ? updatedPilot : p)
                 setPilots(p=> updatedPilots)
             }
         }
@@ -114,11 +115,12 @@ function App() {
       getViolatedDrones()
 
         
-    }, [drones, violatedDrones])
+    }, [drones])
 
 
     return (
         <div className="App">
+            <Header />
             {pilots ? <PilotCardGrid pilots={pilots} /> : null}
         </div>
     )
