@@ -1,4 +1,4 @@
-import "./App.css"
+import "./styles/App.css"
 import React, { useState, useEffect } from "react"
 import droneService from "./services/drones"
 import pilotService from "./services/pilots"
@@ -81,7 +81,12 @@ const timeDifferenceInMinutes = (date1, date2) => {
     return difference / 1000 / 60
 }
 
-
+/**
+ * Return true if drone is in pilots array
+ * @param {obj} pilots 
+ * @param {obj} drone 
+ * @returns boolean
+ */
 const isNewDrone = (pilots, drone) => {
     return pilots ? pilots.filter(
         p => p.drone.serialNumber === drone.serialNumber
@@ -114,11 +119,8 @@ function App() {
         const violatedDronesArray = calculateViolatedDrones(drones)
         for (const violatedDrone of violatedDronesArray) {
 
-            // check if drone is new
-            if (
-                isNewDrone(pilots, violatedDrone)
-            ) {
-                    
+            if (isNewDrone(pilots, violatedDrone)) {
+
                 // get pilot of violated drone
                 const resp = await pilotService.getPilot(violatedDrone.serialNumber)
                 const pilot = {...resp, violatedTime: new Date(), "drone": violatedDrone}
