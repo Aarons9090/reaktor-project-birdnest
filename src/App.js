@@ -147,7 +147,7 @@ function App() {
         }
         getViolatedDrones()
 
-    }, [drones])
+    }, [drones, pilots])
 
 
     return (
