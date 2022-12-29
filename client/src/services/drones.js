@@ -1,6 +1,6 @@
 import axios from "axios"
-const URL = "https://assignments.reaktor.com/birdnest/drones"
-axios.defaults.withCredentials = true
+const URL = "http://localhost:3001/drones"
+
 
 const getStringFromXml = (xmlDoc, tagName) => xmlDoc.getElementsByTagName(tagName)[0].textContent
 

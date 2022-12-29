@@ -1,6 +1,6 @@
 import axios from "axios"
-const URL = "https://assignments.reaktor.com/birdnest/pilots/"
-axios.defaults.withCredentials = true
+const URL = "http://localhost:3001/pilots"
+
 
 const getPilot = async (serialNumber) => {
     const response = await axios.get(`${URL}/${serialNumber}`)
